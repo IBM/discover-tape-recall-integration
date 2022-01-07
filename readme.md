@@ -49,9 +49,9 @@ The following preparation steps must be performed in the IBM Spectrum Discover s
 
 Clone this repository: 
 
-    ```
-    $ git clone git@github.ibm.com:nils-haustein/SpectrumDiscover-TapeRecall.git
-    ``` 
+```
+# git clone git@github.ibm.com:nils-haustein/SpectrumDiscover-TapeRecall.git
+``` 
 
 Enter the configuration variables that were create in the preparation step above in the file [configParms.rc](configParms.rc). The configuration parameters defined in this file are sourced in all other program examples: 
 
