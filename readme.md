@@ -49,7 +49,7 @@ The following preparation steps must be performed in the IBM Spectrum Discover s
 
 Clone this repository: 
 
-    ```shell
+    ```
     $ git clone git@github.ibm.com:nils-haustein/SpectrumDiscover-TapeRecall.git
     ``` 
 
