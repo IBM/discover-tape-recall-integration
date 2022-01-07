@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Program:
+#   configParms.rc 
+#
+# Purpose:
+#   configuration parameters for all modules, to be sourced in all scripts
+#
+#
+#=====================================================================
+
+# constants
+# Spectrum Discover server constants
+# Spectrum Discover server
+sdServer="9.155.115.218"
+# data admin username that is used to execute the workflows
+sdUser=nhaustein
+# password for the data admin username
+sdPasswd=Test1234a
+# Spectrum Discover catalog database (default)
+sdDb=metaocean
+
+# name of the collection to to apply the filter for
+# name must be embraced in double and single quotes ("'collection-name'"), 
+# for multiple collection use syntax "'col1', 'col2'"
+# for all collections use ""
+# if collName is empty, the default is all collections ('%')
+collName="'archivecollection'"
+
+# name and value of the tag to be applied
+tagName="recallMe"
+# must be true or false
+tagValue="true"
