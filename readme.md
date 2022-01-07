@@ -1,14 +1,14 @@
 ## Introduction
 
-This set of program examples accomodating workflows for tape optimized recalls of files using the metadata management capabilities of IBM Spectrum Discover. 
+This set of program examples accomodates workflows for tape optimized recalls of files using the metadata management capabilities of IBM Spectrum Discover. 
 
 The solution where these progam examples are used is shown in the figure below:
 
 ![Solution](img/solution.png)
 
-Files are stored in an IBM Spectrum Scale file systemfor files that is space managed by IBM Spectrum Archive Enterprise Edition. The user can see and access files, except for migrated files. 
+Files are stored in an IBM Spectrum Scale file system that is space managed by IBM Spectrum Archive Enterprise Edition. The user can see and access files, except for migrated files. Accessing migrated files requires interaction with the metadata management system provided by IBM Spectrum Discover. 
 
-IBM Spectrum Discover is used to catalog the metadata for files stored in the IBM Spectrum Scale file system. Furthermore, IBM Spectrum Discover allows adding custom tags for files that are migrated and must be recalled in a tape optimized manner. This gives the user to ability to see the migration state and tag files to be recalled. 
+IBM Spectrum Discover catalogs the metadata for files stored in the IBM Spectrum Scale file system, including the migration state for files. Furthermore, IBM Spectrum Discover allows adding custom tags for files that are migrated and must be recalled in a tape optimized manner. This gives the user to ability to see the migration state and tag files to be recalled. 
 
 The program examples in the repository use the IBM Spectrum Discover REST APIs. 
 
@@ -31,6 +31,8 @@ The following workflow can be accomodated using the programming examples in this
 
 4. Once the recall is completed the scheduled [scancol.sh](scancol.sh) scans the IBM Spectrum Scale data source to update the migration status of all files. Furthermore, it updates the collection containing the set of files that are space managed by IBM Spectrum Archive Enterprise Edition. And it resets the custom recall for those files that are no longer migrated. 
 
+To accomodate this workflow, the solution must be deployed and prepared. 
+
 
 ## Preparation
 
@@ -43,6 +45,8 @@ The following preparation steps must be performed in the IBM Spectrum Discover s
 3. Create a custom tag that is used to tag files for recall. Record the `tag name` and `tag value`. 
 
 5. Optionally, create an IBM Spectrum Discover user with the role Data Admin. Record the `data admin username` and the `data admin user password`.
+
+Once these steps are completed, the program examples can be installed and configured. 
 
 
 ## Installation and configuration
