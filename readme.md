@@ -78,21 +78,21 @@ This program allows the user to display the migration state and the value of the
 
 The example below shows the selected metadata fields for file in path /ibm/fs1/discover1/test1:
 
-    ```shell
-    # lstag.sh /ibm/fs1/discover1/test1
-    State  Size    recallMe Collection       Path-and-Filename
-    ------ ------- -------- ----------       -------------------
-    migrtd 857088  true    archivecollection /ibm/fs1/discover1/test1/file_8.pdf
-    migrtd 788480  true    archivecollection /ibm/fs1/discover1/test1/file_9.pdf
-    migrtd 236550  true    archivecollection /ibm/fs1/discover1/test1/file_0.pdf
-    premig 848896  false   archivecollection /ibm/fs1/discover1/test1/file_1.pdf
-    migrtd 290816  true    archivecollection /ibm/fs1/discover1/test1/file_2.pdf
-    premig 599040  false   archivecollection /ibm/fs1/discover1/test1/file_3.pdf
-    migrtd 386048  true    archivecollection /ibm/fs1/discover1/test1/file_4.pdf
-    migrtd 795648  true    archivecollection /ibm/fs1/discover1/test1/file_5.pdf
-    migrtd 644096  true    archivecollection /ibm/fs1/discover1/test1/file_6.pdf
-    migrtd 117760  true    archivecollection /ibm/fs1/discover1/test1/file_7.pdf
-    ``` 
+```shell
+# lstag.sh /ibm/fs1/discover1/test1
+State  Size    recallMe Collection       Path-and-Filename
+------ ------- -------- ----------       -------------------
+migrtd 857088  true    archivecollection /ibm/fs1/discover1/test1/file_8.pdf
+migrtd 788480  true    archivecollection /ibm/fs1/discover1/test1/file_9.pdf
+migrtd 236550  true    archivecollection /ibm/fs1/discover1/test1/file_0.pdf
+premig 848896  false   archivecollection /ibm/fs1/discover1/test1/file_1.pdf
+migrtd 290816  true    archivecollection /ibm/fs1/discover1/test1/file_2.pdf
+premig 599040  false   archivecollection /ibm/fs1/discover1/test1/file_3.pdf
+migrtd 386048  true    archivecollection /ibm/fs1/discover1/test1/file_4.pdf
+migrtd 795648  true    archivecollection /ibm/fs1/discover1/test1/file_5.pdf
+migrtd 644096  true    archivecollection /ibm/fs1/discover1/test1/file_6.pdf
+migrtd 117760  true    archivecollection /ibm/fs1/discover1/test1/file_7.pdf
+``` 
 
 
 ### [ftag.sh](ftag.sh) - set the recallMe tag to true
@@ -101,29 +101,29 @@ This program allows the user to tag metadata records for a given path and file n
 
 In the example the file /ibm/fs1/discover1/test1/file_1.pdf is tagged with the recallMe=true tag. Before the tag is added, the state of the file is the following in IBM Spectrum Discover:
 
-    ```shell
-    # lstag.sh /ibm/fs1/discover1/test1/file_1.pdf
-    State  Size    recallMe Collection          Path-and-Filename
-    -----  ------- -------- ----------          -----------------
-    migrtd 848896  false    archivecollection  /ibm/fs1/discover1/test1/file_1.pdf
-    ```
+```shell
+# lstag.sh /ibm/fs1/discover1/test1/file_1.pdf
+State  Size    recallMe Collection          Path-and-Filename
+-----  ------- -------- ----------          -----------------
+migrtd 848896  false    archivecollection  /ibm/fs1/discover1/test1/file_1.pdf
+```
 
 Adding the tag:
 
-    ```shell
-    # ftag.sh /ibm/fs1/discover1/test1/file_1.pdf
-    Info: checking if tag recallMe exists.
-    Info: creating and executing policy to tag the files
-    ```
+```shell
+# ftag.sh /ibm/fs1/discover1/test1/file_1.pdf
+Info: checking if tag recallMe exists.
+Info: creating and executing policy to tag the files
+```
 
 Finally, check the state again. The tag was successfully added:
 
-    ```shell
-    # lstag.sh /ibm/fs1/discover1/test1/file_1.pdf
-    State  Size    recallMe Collection         Path-and-Filename
-    -----  ------- -------- ----------         -----------------
-    migrtd 848896  true     archivecollection  /ibm/fs1/discover1/test1/file_1.pdf
-    ```
+```shell
+# lstag.sh /ibm/fs1/discover1/test1/file_1.pdf
+State  Size    recallMe Collection         Path-and-Filename
+-----  ------- -------- ----------         -----------------
+migrtd 848896  true     archivecollection  /ibm/fs1/discover1/test1/file_1.pdf
+```
 
 
 ### [recallTagged.sh](recallTagged) - recall tagged files
@@ -132,14 +132,14 @@ This program queries the metadata catalog for files in a specified collection th
 
 The example below recalls all tagged files in the `archivecollection`:
 
-    ```shell
-    # recallTagged.sh archivecollection
-    Info: Checking configuration parameters.
-    Info: obtaining file list from Spectrum Discover.
-    Info: recalling 10 files.
-    2021-12-31 10:33:51 GLESL268I: 10 file name(s) have been provided to recall.
-    2021-12-31 10:33:54 GLESL839I: All 10 file(s) has been successfully processed.
-    ```
+```shell
+# recallTagged.sh archivecollection
+Info: Checking configuration parameters.
+Info: obtaining file list from Spectrum Discover.
+Info: recalling 10 files.
+2021-12-31 10:33:51 GLESL268I: 10 file name(s) have been provided to recall.
+2021-12-31 10:33:54 GLESL839I: All 10 file(s) has been successfully processed.
+```
 
 This program is not intended for use by the user of the file system. It is an administrative program that the administrator of the IBM Spectrum Archive EE system should use. This program can be scheduled to run in certain intervals. 
 
@@ -152,40 +152,40 @@ This program updates the IBM Spectrum Discover catalog for a specified data sour
 
 The example below shows how to run this program for the data source name `archive` and the collection `archivecollection` (both created during preparation):
 
-    ```shell
-    # scancol.sh archive archivecollection
-    Info: Checking configuration parameters.
-    --------------------------------------------------------------------
-    Info: checking and scanning data source connection archive
-    Info: Data source connection archive exists, scanning it.
-    Info: status: Complete
-    --------------------------------------------------------------------
-    Info: checking if collection policy exists.
-    Info: Collection policy archivecollection_tagpolicy exists, starting it.
-    Info: status: complete
-    ---------------------------------------------------------------------
-    Info: checking if policy to remove tag recallMe exists.
-    Info: Starting policy recallMeNot-policy to remove the tag recallMe.
-    Info: status: complete
-    ```
+```shell
+# scancol.sh archive archivecollection
+Info: Checking configuration parameters.
+--------------------------------------------------------------------
+Info: checking and scanning data source connection archive
+Info: Data source connection archive exists, scanning it.
+Info: status: Complete
+--------------------------------------------------------------------
+Info: checking if collection policy exists.
+Info: Collection policy archivecollection_tagpolicy exists, starting it.
+Info: status: complete
+---------------------------------------------------------------------
+Info: checking if policy to remove tag recallMe exists.
+Info: Starting policy recallMeNot-policy to remove the tag recallMe.
+Info: status: complete
+```
 
 After running the program `scancol.sh`, the tags state and `recallMe` were adjusted as show in the `lstag.sh` output below: 
 
-    ```shell
-    # lstag.sh /ibm/fs1/discover1/test1
-    State  Size    recallMe Collection       Path-and-Filename
-    ------ ------- -------- ----------       -------------------
-    premig 857088  false    archivecollection /ibm/fs1/discover1/test1/file_8.pdf
-    premig 788480  false    archivecollection /ibm/fs1/discover1/test1/file_9.pdf
-    premig 236550  false    archivecollection /ibm/fs1/discover1/test1/file_0.pdf
-    premig 848896  false    archivecollection /ibm/fs1/discover1/test1/file_1.pdf
-    premig 290816  false    archivecollection /ibm/fs1/discover1/test1/file_2.pdf
-    premig 599040  false    archivecollection /ibm/fs1/discover1/test1/file_3.pdf
-    premig 386048  false    archivecollection /ibm/fs1/discover1/test1/file_4.pdf
-    premig 795648  false    archivecollection /ibm/fs1/discover1/test1/file_5.pdf
-    premig 644096  false    archivecollection /ibm/fs1/discover1/test1/file_6.pdf
-    premig 117760  false    archivecollection /ibm/fs1/discover1/test1/file_7.pdf
-    ```
+```shell
+# lstag.sh /ibm/fs1/discover1/test1
+State  Size    recallMe Collection       Path-and-Filename
+------ ------- -------- ----------       -------------------
+premig 857088  false    archivecollection /ibm/fs1/discover1/test1/file_8.pdf
+premig 788480  false    archivecollection /ibm/fs1/discover1/test1/file_9.pdf
+premig 236550  false    archivecollection /ibm/fs1/discover1/test1/file_0.pdf
+premig 848896  false    archivecollection /ibm/fs1/discover1/test1/file_1.pdf
+premig 290816  false    archivecollection /ibm/fs1/discover1/test1/file_2.pdf
+premig 599040  false    archivecollection /ibm/fs1/discover1/test1/file_3.pdf
+premig 386048  false    archivecollection /ibm/fs1/discover1/test1/file_4.pdf
+premig 795648  false    archivecollection /ibm/fs1/discover1/test1/file_5.pdf
+premig 644096  false    archivecollection /ibm/fs1/discover1/test1/file_6.pdf
+premig 117760  false    archivecollection /ibm/fs1/discover1/test1/file_7.pdf
+```
 
 This program is not intended for use by the user of the file system. It is an administrative program that the administrator of the IBM Spectrum Archive EE system should use. This program can be scheduled to run in certain intervals, perhaps it may be executed right after the tape optimized recall. 
 
