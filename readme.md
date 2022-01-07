@@ -1,10 +1,10 @@
-##Introduction
+## Introduction
 
 This set of program examples accomodating workflows for tape optimized recalls of files using the metadata management capabilities of IBM Spectrum Discover. 
 
 The solution where these progam examples are used is shown in the figure below:
 
-![Solution](../img/solution.png)
+![Solution](img/solution.png)
 
 Files are stored in an IBM Spectrum Scale file systemfor files that is space managed by IBM Spectrum Archive Enterprise Edition. The user can see and access files, except for migrated files. 
 
@@ -15,11 +15,11 @@ The program examples in the repository use the IBM Spectrum Discover REST APIs.
 For more information about the solution refer to this [article](tbd). 
 
 
-###License
+### License
 This project is under [MIT license](LICENSE.txt).
 
 
-##Workflow
+## Workflow
 
 The following workflow can be accomodated using the programming examples in this repository. These programming examples use the IBM Spectrum Discover REST APIs. 
 
@@ -32,7 +32,7 @@ The following workflow can be accomodated using the programming examples in this
 4. Once the recall is completed the scheduled [scancol.sh](scancol.sh) scans the IBM Spectrum Scale data source to update the migration status of all files. Furthermore, it updates the collection containing the set of files that are space managed by IBM Spectrum Archive Enterprise Edition. And it resets the custom recall for those files that are no longer migrated. 
 
 
-##Preparation
+## Preparation
 
 The following preparation steps must be performed in the IBM Spectrum Discover server to accomodate the workflow. In each step some configuration variables must be recorded: 
 
@@ -44,7 +44,8 @@ The following preparation steps must be performed in the IBM Spectrum Discover s
 
 5. Optionally, create an IBM Spectrum Discover user with the role Data Admin. Record the `data admin username` and the `data admin user password`.
 
-##Installation and configuration
+
+## Installation and configuration
 
 Clone this repository: 
 
@@ -68,10 +69,10 @@ Enter the configuration variables that were create in the preparation step above
 Get familiar with the programm examples below. 
 
 
-##Programm examples reference
+## Programm examples reference
 
 
-###[lstag.sh](lstag.sh) - display migration status and tags
+### [lstag.sh](lstag.sh) - display migration status and tags
 
 This program allows the user to display the migration state and the value of the tag `recallMe` for a given path and file name specification. It queries the IBM Spectrum Discover metadata catalog with the filter provided by the user. The filter is a path and file name specification and can either be a fully qualified path name or a fully qualified file name. Wildcards are not currently supported. 
 
@@ -93,7 +94,8 @@ The example below shows the selected metadata fields for file in path /ibm/fs1/d
     migrtd 117760  true    archivecollection /ibm/fs1/discover1/test1/file_7.pdf
     ``` 
 
-###[ftag.sh](ftag.sh) - set the recallMe tag to true
+
+### [ftag.sh](ftag.sh) - set the recallMe tag to true
 
 This program allows the user to tag metadata records for a given path and file name specification with the tag recallMe=true. It updates and executes an auto-tagging policy in the IBM Spectrum Discover server that adds the tag `recallMe=true` to metadata records matching the path and file name specification and where the state is migrated. The user provided path and file name specification and can either be a fully qualified path name or a fully qualified file name. Wildcards are not currently supported.
 
@@ -123,7 +125,8 @@ Finally, check the state again. The tag was successfully added:
     migrtd 848896  true     archivecollection  /ibm/fs1/discover1/test1/file_1.pdf
     ```
 
-###[recallTagged.sh](recallTagged) - recall tagged files
+
+### [recallTagged.sh](recallTagged) - recall tagged files
 
 This program queries the metadata catalog for files in a specified collection that have the tag `recallMe` set to `true` and recalls these files. This program must run on an IBM Spectrum Archive server because it uses the `eeadm recall` command. The collection is provided as input parameter by the user. 
 
@@ -143,7 +146,7 @@ This program is not intended for use by the user of the file system. It is an ad
 Note, after recalling files using IBM Spectrum Archive EE, the metadata records in the IBM Spectrum Discover catalog are not automatically updated. An additional program is used to update the catalog. 
 
 
-###[scancol.sh](scancol.sh) - Update metadata catalog
+### [scancol.sh](scancol.sh) - Update metadata catalog
 
 This program updates the IBM Spectrum Discover catalog for a specified data source and collection. It first scans the data source provided by the user as input parameter. Then it runs the collection policy for the collection provided by the user as input parameter. Finally,  it runs a auto-tagging policy that sets the `recallMe` tag to `false` for all files that are not migrated in the collection. 
 
