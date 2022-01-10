@@ -3,7 +3,7 @@
 ################################################################################
 # The MIT License (MIT)                                                        #
 #                                                                              #
-# Copyright (c) 2020 Nils Haustein                             				   #
+# Copyright (c) 2022 Nils Haustein                             				   #
 #                                                                              #
 # Permission is hereby granted, free of charge, to any person obtaining a copy #
 # of this software and associated documentation files (the "Software"), to deal#
@@ -45,11 +45,9 @@ else
   source ./$configFile
 fi
 
-if [[ -z $sdServer || -z $sdUser || -z $sdPasswd || -z $sdDB || -z $collName || -z $tagName || -z $tagValue ]]; then
-  echo "Info: Checking configuration parameters."
-else
+if [[ -z $sdServer || -z $sdUser || -z $sdPasswd || -z $sdDb || -z $collName || -z $tagName || -z $tagValue ]]; then
   echo "ERROR: configuration paramters not set in file $configFile. Set config parameters and continue."
-  echo "DEBUG: $sdServer, $sdUser, $sdPasswd, $sdDB, $collName, $tagName, $tagValue."
+  echo -e "DEBUG: Current setting: \n\tsdServer=$sdServer, \n\tsdUser=$sdUser, \n\tsdPasswd=$sdPasswd, \n\tsdDb=$sdDb, \n\tcollection=$collName, \n\ttagName=$tagName, \n\ttagValue=$tagValue."
   exit 1
 fi
 
@@ -93,14 +91,23 @@ fi
 connName=$1
 collName=$2
 
-# obtain token
+# obtain a token
 echo "Info: obtaining token for $sdUser@$sdServer"
 token=""
-token=$(echo `curl -k -u $sdUser:$sdPasswd https://$sdServer/auth/v1/token -I 2>/dev/null | grep X-Auth-Token |cut -f 2 -d":"`) 
+####
+# get the token looking for upper and lower case x-auth-token
+####
+token=$(curl -k -u $sdUser:$sdPasswd https://$sdServer/auth/v1/token -I 2>/dev/null | grep -i "x-auth-token" |cut -f 2 -d":")
 if [[ -z $token ]]; then
   echo "Error: unable to obtain token, check the connection and username and password. "
+  echo "Debug: getting token results in:"
+  curl -k -u $sdUser:$sdPasswd https://$sdServer/auth/v1/token
   exit 1
 fi
+####
+# remove trailing CR and NL from token
+####
+token=$(echo $token | tr -d '\r\n')
 
 echo "--------------------------------------------------------------------------------------"
 
@@ -228,6 +235,9 @@ if [[ "$itemExist" != "complete" || $run == $maxSleeps ]]; then
   echo "Error: Policy $polName did not complete in time, exiting (status: $itemExist, loop count: $run)"
   exit 1
 fi
+
+# remove tmpFile
+rm -f $tmpFile
 
 
 exit 0
