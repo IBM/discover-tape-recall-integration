@@ -53,7 +53,7 @@ Once these steps are completed, the program examples can be installed and config
 
 Clone this repository: 
 
-```
+```shell
 # git clone git@github.ibm.com:nils-haustein/SpectrumDiscover-TapeRecall.git
 ``` 
 
