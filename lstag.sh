@@ -3,7 +3,7 @@
 ################################################################################
 # The MIT License (MIT)                                                        #
 #                                                                              #
-# Copyright (c) 2020 Nils Haustein                             				   #
+# Copyright (c) 2022 Nils Haustein                             				   #
 #                                                                              #
 # Permission is hereby granted, free of charge, to any person obtaining a copy #
 # of this software and associated documentation files (the "Software"), to deal#
@@ -47,11 +47,9 @@ else
   source ./$configFile
 fi
 
-if [[ -z $sdServer || -z $sdUser || -z $sdPasswd || -z $sdDB || -z $collName || -z $tagName || -z $tagValue ]]; then
-  echo "Info: Checking configuration parameters."
-else
+if [[ -z $sdServer || -z $sdUser || -z $sdPasswd || -z $sdDb || -z $collName || -z $tagName || -z $tagValue ]]; then
   echo "ERROR: configuration paramters not set in file $configFile. Set config parameters and continue."
-  echo "DEBUG: $sdServer, $sdUser, $sdPasswd, $sdDB, $collName, $tagName, $tagValue."
+  echo -e "DEBUG: Current setting: \n\tsdServer=$sdServer, \n\tsdUser=$sdUser, \n\tsdPasswd=$sdPasswd, \n\tsdDb=$sdDb, \n\tcollection=$collName, \n\ttagName=$tagName, \n\ttagValue=$tagValue."
   exit 1
 fi
 
@@ -83,7 +81,7 @@ fName=""
 pName=""
 if [[ -f "$1" ]]; then
 #  echo "DEBUG: $1 is a file."
-  fName=$(basename $1)
+  fName=$(basename "$1")
   pName=${1%/*}
 fi
 
@@ -104,38 +102,74 @@ if [[ -z "$collName" ]]; then
   collName="select collection from $sdDb"
 fi
 
-# start the query
+
+# obtain a token
 # echo "Info: obtaining token for $sdUser@$sdServer"
 token=""
-token=$(echo `curl -k -u $sdUser:$sdPasswd https://$sdServer/auth/v1/token -I 2>/dev/null | grep X-Auth-Token |cut -f 2 -d":"`) 
-
+####
+# get the token looking for upper and lower case x-auth-token
+####
+token=$(curl -k -u $sdUser:$sdPasswd https://$sdServer/auth/v1/token -I 2>/dev/null | grep -i "x-auth-token" |cut -f 2 -d":")
 if [[ -z $token ]]; then
   echo "Error: unable to obtain token, check the connection and username and password. "
+  echo "Debug: getting token results in:"
+  curl -k -u $sdUser:$sdPasswd https://$sdServer/auth/v1/token
   exit 1
+fi
+####
+# remove trailing CR and NL from token
+####
+token=$(echo $token | tr -d '\r\n')
+
+
+####
+# check if tag $tagName exists and if not, then do not use it in the query later
+#
+#echo "Info: checking if tag $tagName exists."
+tagExist=""
+tagExist=$(curl -H "Authorization: Bearer ${token}" -k https://$sdServer/policyengine/v1/tags/$tagName 2>>/dev/null | grep -o '"tag": "[^"]*' | grep -o '[^"]*$')
+#echo "DEBUG: tagExist=$tagExist"
+if [[ -z $tagExist ]]; then
+  echo "Warning: tag $tagName does not exists, setting value to undefined."
 fi
 
 
 # perform query
-# print the header
-printf "%-10s %-12s %-12s %-20s %s\n" "State" "Size" "$tagName" "Collection" "Path-and-Filename"
-printf "%-10s %-12s %-12s %-20s %s\n" "--------" "--------" "--------" "----------" "-------------------------------------------------------------"
-# run query and display results
 # echo "DEBUG: select statement: select path, filename, size, state, collection, $tagName from $sdDb where path like $pName and filename like $fName and collection in ($collName)"
-# curl -k -H "Authorization: Bearer ${token}" https://$sdServer/db2whrest/v1/sql_query -X POST -d"select path, filename, size, state, collection, $tagName from $sdDb where path like $pName and filename like $fName and collection in ($collName)" 2>/dev/null 
-
-curl -k -H "Authorization: Bearer ${token}" https://$sdServer/db2whrest/v1/sql_query -X POST -d"select path, filename, size, state, collection, $tagName from $sdDb where path like $pName and filename like $fName and collection in ($collName)" 2>/dev/null | while read line; 
-do 
-  pn=$(echo $line | cut -d'"' -f 2) 
-  fn=$(echo $line | cut -d'"' -f 4)
-  st=$(echo $line | cut -d',' -f 4)
-  sz=$(echo $line | cut -d'"' -f 6)
-  col=$(echo $line | cut -d'"' -f 8)
-  tv=$(echo $line | cut -d'"' -f 10)
-  if [[ -z $tv ]]; then
-    tv=null
-  fi
-  # echo "DEBUG: $sz, $st, $col, $tv $pn, $fn"
-  printf "%-10s %-12s %-12s %-20s %s\n" $sz $st $tv $col $pn$fn
-done
+# print the header
+printf "%-12s %-10s %-10s %-20s %s\n" "Size" "State" "$tagName" "Collection" "Path-and-Filename"
+printf "%-12s %-10s %-10s %-20s %s\n" "----" "-----" "----------" "----------" "-------------------------------------------------------------"
+# run query with tagName if it exists
+if [[ ! -z $tagExist ]]; then
+  curl -k -H "Authorization: Bearer ${token}" https://$sdServer/db2whrest/v1/sql_query -X POST -d"select path, filename, size, state, collection, $tagName from $sdDb where path like $pName and filename like $fName and collection in ($collName)" 2>/dev/null | while read line; 
+  do
+    pn=$(echo $line | cut -d',' -f 2 | tr -d ':":')
+    fn=$(echo $line | cut -d',' -f 3 | tr -d ':":')
+    sz=$(echo $line | cut -d',' -f 4)
+    st=$(echo $line | cut -d',' -f 5 | tr -d ':":')
+    col=$(echo $line | cut -d',' -f 6 | tr -d ':":')
+    tv=$(echo $line | cut -d',' -f 7 | tr -d ':":')
+    if [[ $tv = "" ]]; then
+      tv=null
+    fi
+    # echo "DEBUG: $sz, $st, $col, $tv $pn, $fn"
+    # print the fields formatted, enclose pn and fn in quotes and remove quotes at the end.
+    printf "%-12s %-10s %-10s %-20s %s\n" $sz $st $tv $col "$pn""$fn"
+  done
+else 
+  # run query without tagName if it does not exists
+  curl -k -H "Authorization: Bearer ${token}" https://$sdServer/db2whrest/v1/sql_query -X POST -d"select path, filename, size, state, collection from $sdDb where path like $pName and filename like $fName and collection in ($collName)" 2>/dev/null | while read line; 
+  do
+    pn=$(echo $line | cut -d',' -f 2 | tr -d ':":')
+    fn=$(echo $line | cut -d',' -f 3 | tr -d ':":')
+    sz=$(echo $line | cut -d',' -f 4)
+    st=$(echo $line | cut -d',' -f 5 | tr -d ':":')
+    col=$(echo $line | cut -d',' -f 6 | tr -d ':":')
+    tv=undefined
+    # echo "DEBUG: $sz, $st, $col, $tv $pn, $fn"
+    # print the fields formatted, enclose pn and fn in quotes and remove quotes at the end.
+    printf "%-12s %-10s %-10s %-20s %s\n" $sz $st $tv $col "$pn""$fn"
+  done
+fi
 
 exit 0
