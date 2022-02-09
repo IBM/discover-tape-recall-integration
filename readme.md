@@ -53,8 +53,8 @@ Once these steps are completed, the program examples can be installed and config
 
 Clone this repository: 
 
-```shell
-# git clone git@github.ibm.com:nils-haustein/SpectrumDiscover-TapeRecall.git
+```
+# git clone git@github.com:IBM/discover-tape-recall-integration.git
 ``` 
 
 Enter the configuration variables that were create in the preparation step above in the file [configParms.rc](configParms.rc). The configuration parameters defined in this file are sourced in all other program examples: 
