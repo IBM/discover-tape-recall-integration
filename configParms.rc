@@ -13,19 +13,22 @@
 # Spectrum Discover server constants
 # Spectrum Discover server
 sdServer=[enter-sdserver-address]
+
 # data admin username that is used to execute the workflows
 sdUser=[enter-data-admin-username]
+
 # password for the data admin username
 sdPasswd=[enter-data-admin-user-password]
+
 # Spectrum Discover catalog database (default)
 sdDb=metaocean
 
 # name of the collection to to apply the filter for
 # name must be embraced in double and single quotes ("'collection-name'"), 
 # for multiple collection use syntax "'col1', 'col2'"
-# for all collections use ""
-# if collName is empty, the default is all collections ('%')
-collName="'[enter-collection-name]'"
+# when collection does not matters use "", searches for records in all collection
+# collName="'[enter-collection-name]'"
+collName=""
 
 # name and value of the tag to be applied
 tagName="recallMe"
