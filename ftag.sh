@@ -36,6 +36,7 @@
 #
 #=====================================================================
 
+###
 # source and check config parameters
 configFile="configParms.rc"
 if [[ ! -a $configFile ]]; then
@@ -45,12 +46,20 @@ else
   source ./$configFile
 fi
 
-if [[ -z $sdServer || -z $sdUser || -z $sdPasswd || -z $sdDb || -z $collName || -z $tagName || -z $tagValue ]]; then
+if [[ -z $sdServer || -z $sdUser || -z $sdPasswd || -z $sdDb || -z $tagName || -z $tagValue ]]; then
   echo "ERROR: configuration paramters not set in file $configFile. Set config parameters and continue."
   echo -e "DEBUG: Current setting: \n\tsdServer=$sdServer, \n\tsdUser=$sdUser, \n\tsdPasswd=$sdPasswd, \n\tsdDb=$sdDb, \n\tcollection=$collName, \n\ttagName=$tagName, \n\ttagValue=$tagValue."
   exit 1
 fi
 
+# check collection name and compose the collection string for the query
+if [[ -z "$collName" ]]; then
+  collString=""
+else
+  collString="and collection in ($collName)"
+fi
+
+###
 # constants
 # policy name
 polName=$tagName"-policy"
@@ -77,6 +86,7 @@ syntax ()
 # Main
 #=====================================================================
 
+###
 # check arguments
 if (( $# != 1 )); then
   echo "Error: invalid number of arguments"
@@ -84,32 +94,40 @@ if (( $# != 1 )); then
   exit 1
 fi
 
-# assign path and filename
+###
+# assign and adjust path and filename
 fName=""
 pName=""
 if [[ -f "$1" ]]; then
-#  echo "DEBUG: $1 is a file."
+  # if this is a file, then assign the path and file name
   fName=$(basename "$1")
-  pName=${1%/*}
-fi
-
-if [[ -d "$1" ]]; then
-#  echo "DEBUG: $1 is a directory."
-  fName="%"
-  # remove trailing / when required
-  pName=${1%/}
+  pName="${1%/*}/"
+  # echo "DEBUG: path=$pName, file=$fName"
+else
+  if [[ -d "$1" ]]; then
+    # if this is a directory, then assign path name and set filename to %
+    fName="%"
+    # remove trailing / when required
+    pName="${1%/}/%"
+    # echo "DEBUG: path=$pName, file=$fName"
+  else
+    # if no file or directory check for wild cards
+    endC=$(echo "${1: -1}")
+    if [[ "$endC" = "%" || "$endC" = "*" ]]; then
+      pName="${1::-1}%"
+      fName="%"
+      # echo "DEBUG: path=$pName, file=$fName"
+    fi
+  fi
 fi
 
 # Adjust print file name and path name, must have trailing /
 fName="'"$fName"'"
-pName="'"$pName"/'"
+pName="'"$pName"'"
 # echo "DEBUG: path=$pName, file=$fName"
 
-# check collection name, if empty embed all collections
-if [[ -z "$collName" ]]; then
-  collName="select collection from $sdDb"
-fi
 
+###
 # obtain a token
 # echo "Info: obtaining token for $sdUser@$sdServer"
 token=""
@@ -129,6 +147,7 @@ fi
 token=$(echo $token | tr -d '\r\n')
 
 
+###
 # check if tag $tagName exists and if not, then create it
 echo "Info: checking if tag $tagName exists."
 tagExist=""
@@ -150,11 +169,13 @@ else
   fi
 fi
 
+
+###
 # create AUTOTAG Policy for the provided file names
 echo "Info: creating policy to tag the files"
 
-# create policy filter
-pFilter="path like $pName and filename like $fName and state like 'migrtd' and collection in ($collName)"
+# create policy filter, only applies to files where state is migrtd
+pFilter="path like $pName and filename like $fName and state like 'migrtd' $collString"
 # echo "DEBUG: policy filter=$pFilter"
 
 # check if policy exists
