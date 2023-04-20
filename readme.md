@@ -60,8 +60,9 @@ Clone this repository to a server, that can access the files in the data source:
 
 Enter the configuration variables that were create in the preparation step above in the file [configParms.rc](configParms.rc). The configuration parameters defined in this file are sourced in all other program examples: 
 
+
 | Parameter | Required | Description |
-| ----------|-------------|
+| ----------|----------|-------------|
 | sdServer | Yes | IP alias or address of the IBM Spectrum Discover server |
 | sdUser   | Yes | `data admin username` of the Data Admin user that was created in the IBM Spectrum Discover server |
 | sdPasswd | Yes | `data admin user password` of the Data Admin user that was created in the IBM Spectrum Discover server |
