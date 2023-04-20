@@ -47,10 +47,17 @@ else
   source ./$configFile
 fi
 
-if [[ -z $sdServer || -z $sdUser || -z $sdPasswd || -z $sdDb || -z $collName || -z $tagName || -z $tagValue ]]; then
+if [[ -z $sdServer || -z $sdUser || -z $sdPasswd || -z $sdDb || -z $tagName || -z $tagValue ]]; then
   echo "ERROR: configuration paramters not set in file $configFile. Set config parameters and continue."
   echo -e "DEBUG: Current setting: \n\tsdServer=$sdServer, \n\tsdUser=$sdUser, \n\tsdPasswd=$sdPasswd, \n\tsdDb=$sdDb, \n\tcollection=$collName, \n\ttagName=$tagName, \n\ttagValue=$tagValue."
   exit 1
+fi
+
+# check collection name and compose the collection string for the query
+if [[ -z "$collName" ]]; then
+  collString=""
+else
+  collString="and collection in ($collName)"
 fi
 
 
@@ -80,29 +87,35 @@ fi
 fName=""
 pName=""
 if [[ -f "$1" ]]; then
-#  echo "DEBUG: $1 is a file."
+  # if this is a file, then assign the path and file name
   fName=$(basename "$1")
-  pName=${1%/*}
-fi
-
-if [[ -d "$1" ]]; then
-#  echo "DEBUG: $1 is a directory."
-  fName="%"
-  # remove trailing / when required
-  pName=${1%/}
+  pName="${1%/*}/"
+  # echo "DEBUG: path=$pName, file=$fName"
+else
+  if [[ -d "$1" ]]; then
+    # if this is a directory, then assign path name and set filename to %
+    fName="%"
+    # remove trailing / when required
+    pName="${1%/}/%"
+    # echo "DEBUG: path=$pName, file=$fName"
+  else
+    # if no file or directory check for wild cards
+    endC=$(echo "${1: -1}")
+    if [[ "$endC" = "%" || "$endC" = "*" ]]; then
+      pName="${1::-1}%"
+      fName="%"
+      # echo "DEBUG: path=$pName, file=$fName"
+    fi 
+  fi
 fi
 
 # Adjust print file name and path name, must have trailing /
 fName="'"$fName"'"
-pName="'"$pName"/'"
+pName="'"$pName"'"
 # echo "DEBUG: path=$pName, file=$fName"
 
-# check collection name, if empty embed all collections
-if [[ -z "$collName" ]]; then
-  collName="select collection from $sdDb"
-fi
 
-
+###
 # obtain a token
 # echo "Info: obtaining token for $sdUser@$sdServer"
 token=""
@@ -127,21 +140,32 @@ token=$(echo $token | tr -d '\r\n')
 #
 #echo "Info: checking if tag $tagName exists."
 tagExist=""
-tagExist=$(curl -H "Authorization: Bearer ${token}" -k https://$sdServer/policyengine/v1/tags/$tagName 2>>/dev/null | grep -o '"tag": "[^"]*' | grep -o '[^"]*$')
-#echo "DEBUG: tagExist=$tagExist"
+tagExist=$(curl -H "Authorization: Bearer ${token}" -k https://$sdServer/policyengine/v1/tags/$tagName 2>>/dev/null  | grep -o '"type": "[^"]*' | grep -o '[^"]*$')
+# echo "DEBUG: tagExist=$tagExist"
 if [[ -z $tagExist ]]; then
   echo "Warning: tag $tagName does not exists, setting value to undefined."
 fi
 
 
+###
 # perform query
-# echo "DEBUG: select statement: select path, filename, size, state, collection, $tagName from $sdDb where path like $pName and filename like $fName and collection in ($collName)"
+# echo "DEBUG: select path, filename, size, state, collection, $tagName from $sdDb where path like $pName and filename like $fName $collString"
 # print the header
 printf "%-12s %-10s %-10s %-20s %s\n" "Size" "State" "$tagName" "Collection" "Path-and-Filename"
 printf "%-12s %-10s %-10s %-20s %s\n" "----" "-----" "----------" "----------" "-------------------------------------------------------------"
 # run query with tagName if it exists
 if [[ ! -z $tagExist ]]; then
-  curl -k -H "Authorization: Bearer ${token}" https://$sdServer/db2whrest/v1/sql_query -X POST -d"select path, filename, size, state, collection, $tagName from $sdDb where path like $pName and filename like $fName and collection in ($collName)" 2>/dev/null | while read line; 
+  # tagExist encodes the tag type, for characteristics tag we must join tables
+  if [[ $tagExist = "Characteristics" ]]; then
+    # query for Characteristics tags
+    sqlQ="SELECT mo.path, mo.filename, mo.size, mo.state, mo.collection, tt.value FROM $sdDb mo LEFT JOIN t_$tagName tt ON mo.fkey = tt.fkey where mo.path like $pName and mo.filename like $fName $collString"
+  else
+    # query for Non Characteristics tags
+    sqlQ="select path, filename, size, state, collection, $tagName from $sdDb where path like $pName and filename like $fName $collString"
+  fi
+  # echo "DEBUG: SQL query: $sqlQ"
+
+  curl -k -H "Authorization: Bearer ${token}" https://$sdServer/db2whrest/v1/sql_query -X POST -d"$sqlQ" 2>/dev/null | while read line; 
   do
     pn=$(echo $line | cut -d',' -f 2 | tr -d ':":')
     fn=$(echo $line | cut -d',' -f 3 | tr -d ':":')
@@ -152,13 +176,16 @@ if [[ ! -z $tagExist ]]; then
     if [[ $tv = "" ]]; then
       tv=null
     fi
+	if [[ -z $col ]]; then
+	  col=none
+	fi
     # echo "DEBUG: $sz, $st, $col, $tv $pn, $fn"
     # print the fields formatted, enclose pn and fn in quotes and remove quotes at the end.
     printf "%-12s %-10s %-10s %-20s %s\n" $sz $st $tv $col "$pn""$fn"
   done
 else 
   # run query without tagName if it does not exists
-  curl -k -H "Authorization: Bearer ${token}" https://$sdServer/db2whrest/v1/sql_query -X POST -d"select path, filename, size, state, collection from $sdDb where path like $pName and filename like $fName and collection in ($collName)" 2>/dev/null | while read line; 
+  curl -k -H "Authorization: Bearer ${token}" https://$sdServer/db2whrest/v1/sql_query -X POST -d"select path, filename, size, state, collection from $sdDb where path like $pName and filename like $fName $collString" 2>/dev/null | while read line; 
   do
     pn=$(echo $line | cut -d',' -f 2 | tr -d ':":')
     fn=$(echo $line | cut -d',' -f 3 | tr -d ':":')
@@ -166,6 +193,9 @@ else
     st=$(echo $line | cut -d',' -f 5 | tr -d ':":')
     col=$(echo $line | cut -d',' -f 6 | tr -d ':":')
     tv=undefined
+	if [[ -z $col ]]; then
+	  col=none
+	fi
     # echo "DEBUG: $sz, $st, $col, $tv $pn, $fn"
     # print the fields formatted, enclose pn and fn in quotes and remove quotes at the end.
     printf "%-12s %-10s %-10s %-20s %s\n" $sz $st $tv $col "$pn""$fn"
