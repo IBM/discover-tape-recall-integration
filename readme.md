@@ -21,10 +21,11 @@ This project is under [MIT license](LICENSE.txt).
 
 ## Workflow
 
-The following workflow can be accomodated using the programming examples in this repository. These programming examples use the IBM Spectrum Discover REST APIs. 
+The following workflow can be accomodated using the programming examples in this repository. These programming examples use the IBM Spectrum Discover REST APIs. The programming examples must be run on a server that has access to the files in the data source (Storage Scale file system). 
 
-1. The user can query the IBM Spectrum Discover metadata catalog to determine the migration state of files, using the [lstag.sh](lstag.sh) program. 
+1. The user can query the IBM Spectrum Discover metadata catalog to determine the migration state of files, using the [lstag.sh](lstag.sh) program.
 
+ 
 2. When the user requires access to migrated files, then he can add a custom recall tag to the files in the IBM Spectrum Discover metadata catalog, using the [ftag.sh](ftag.sh) program.
 
 3. The scheduled [recallTagged.sh](scancol.sh) program periodically queries the IBM Spectrum Discover metadata catalog for files that are migrated and have the custom recall tag set. With this query the scheduled process composes a list of files that must be recalled and invokes the IBM Spectrum Archive Enterprise Edition tape optimized recall function. This process must be scheduled and executed on an IBM Spectrum Archive Enterprise Edition server. 
@@ -40,9 +41,9 @@ The following preparation steps must be performed in the IBM Spectrum Discover s
 
 1. Add the IBM Spectrum Scale data source and record the `data source name` and `file system name`.
 
-2. Create a collection with a policy that includes the partition of the file system that is space managed. The partition can be the entire file system with some exclusions or it can be a fileset that is space managed. Record the `collection name`. 
+2. When required then create a collection that includes the partition of the file system that is space managed. The partition can be the entire file system with some exclusions or it can be a fileset that is space managed. The collection can be used to narrow the scope of metadata records. Record the `collection name`. 
 
-3. Create a custom tag that is used to tag files for recall. Record the `tag name` and `tag value`. 
+3. Optionally, create a custom tag that is used to tag files for recall. The tag type can be Open, Restricted or Characteristics. Record the `tag name` and `tag value`. If the tag is not created, then the program `ftag.sh` will automatically create it.
 
 5. Optionally, create an IBM Spectrum Discover user with the role Data Admin. Record the `data admin username` and the `data admin user password`.
 
@@ -51,7 +52,7 @@ Once these steps are completed, the program examples can be installed and config
 
 ## Installation and configuration
 
-Clone this repository: 
+Clone this repository to a server, that can access the files in the data source: 
 
 ```
 # git clone git@github.com:IBM/discover-tape-recall-integration.git
@@ -59,15 +60,15 @@ Clone this repository:
 
 Enter the configuration variables that were create in the preparation step above in the file [configParms.rc](configParms.rc). The configuration parameters defined in this file are sourced in all other program examples: 
 
-| Parameter | Description |
+| Parameter | Required | Description |
 | ----------|-------------|
-| sdServer | IP alias or address of the IBM Spectrum Discover server |
-| sdUser   | `data admin username` of the Data Admin user that was created in the IBM Spectrum Discover server |
-| sdPasswd | `data admin user password` of the Data Admin user that was created in the IBM Spectrum Discover server |
-| sdDb     | Name of the IBM Spectrum Discover data base. The DB-name `metaocean` is default. |
-| collName | `collection name` that was created in the IBM Spectrum Discover server and that represents the metadata records for the space managed file system partition. |
-| tagName  | `tag name` of the custom tag that was created in the IBM Spectrum Discover server and that is used to tag files for recall. The default tag name is `recallMe`. |
-| tagValue | `tag value` of the custom tag that was created in the IBM Spectrum Discover server and that is used to tag files for recall. The default tag value is `true`, indicating that the file must be recalled|
+| sdServer | Yes | IP alias or address of the IBM Spectrum Discover server |
+| sdUser   | Yes | `data admin username` of the Data Admin user that was created in the IBM Spectrum Discover server |
+| sdPasswd | Yes | `data admin user password` of the Data Admin user that was created in the IBM Spectrum Discover server |
+| sdDb     | Yes | Name of the IBM Spectrum Discover data base. The DB-name `metaocean` is default. |
+| collName | No | `collection name` is the name of the collection(s) that represents the metadata records for the space managed file system partition(s). If no collection is used, then set this parameter to `collName=""`. If one or more collection are used, then set the name to `collName="'collection-name1', 'collection-name2, ..."` |
+| tagName  | Yes | `tag name` is the name of the custom tag that is used to tag files for recall. If the tag was not created upfront, then the program creates the tag automatically. The default tag name is `recallMe`. |
+| tagValue | Yes | `tag value` is the value of the custom tag `tag name` that is set for the files. The default tag value is `true`, indicating that the file must be recalled |
 
 
 Get familiar with the programm examples below. 
