@@ -12,7 +12,7 @@ IBM Spectrum Discover catalogs the metadata for files stored in the IBM Spectrum
 
 The program examples in the repository use the IBM Spectrum Discover REST APIs. 
 
-For more information about the solution refer to this [article](https://community.ibm.com/community/user/storage/blogs/nils-haustein1/2022/02/10/spectrumdiscover-taperecall-integration). 
+For more information about the solution refer to this [blog article on IBM Communities](https://community.ibm.com/community/user/storage/blogs/nils-haustein1/2022/02/10/spectrumdiscover-taperecall-integration). 
 
 
 ### License
